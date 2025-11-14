@@ -3,6 +3,13 @@
 .env
 .env.backup
 .env.production
+.env.railway
+.env.railway.production
+.env.local
+backup_xampp.sql
+backup.sql
+/database/backups/*.sql
+RAILWAY_VARIABLES.txt
 .phpactor.json
 .phpunit.result.cache
 /.fleet
