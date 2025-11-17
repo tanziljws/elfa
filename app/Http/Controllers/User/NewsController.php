@@ -13,7 +13,8 @@ class NewsController extends Controller
      */
     public function index(Request $request)
     {
-        $query = News::published();
+        // Mengganti scope published() dengan filter hanya berdasarkan is_active
+        $query = News::where('is_active', true);
         
         // Filter by category
         if ($request->has('category') && $request->category != 'all') {
@@ -49,14 +50,14 @@ class NewsController extends Controller
         $news = News::where('is_active', true)->findOrFail($id);
         
         // Get related news (same category, exclude current)
-        $relatedNews = News::published()
+        $relatedNews = News::where('is_active', true)
             ->where('category', $news->category)
             ->where('id', '!=', $news->id)
             ->limit(3)
             ->get();
         
         // Get latest news
-        $latestNews = News::published()
+        $latestNews = News::where('is_active', true)
             ->where('id', '!=', $news->id)
             ->limit(5)
             ->get();
@@ -69,7 +70,7 @@ class NewsController extends Controller
      */
     public function category($category)
     {
-        $news = News::published()
+        $news = News::where('is_active', true)
             ->where('category', $category)
             ->paginate(9);
         

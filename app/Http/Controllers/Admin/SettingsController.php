@@ -7,6 +7,7 @@ use App\Models\Gallery;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class SettingsController extends Controller
@@ -45,21 +46,43 @@ class SettingsController extends Controller
         if ($redirect) return $redirect;
         
         try {
+            // Get all settings from database to compare
+            $allSettings = Setting::pluck('type', 'key')->toArray();
+            
             // Update all settings from request
-            foreach ($request->except(['_token', '_method']) as $key => $value) {
+            foreach ($allSettings as $key => $type) {
                 $setting = Setting::where('key', $key)->first();
                 
                 if ($setting) {
                     // Handle different types
-                    if ($setting->type === 'boolean') {
+                    if ($type === 'boolean') {
+                        // For boolean types, if the key exists in request, it means it's checked (true)
+                        // If not exists, it means it's unchecked (false)
                         $value = $request->has($key) ? '1' : '0';
+                    } else {
+                        // For non-boolean types, get value from request or use empty string
+                        $value = $request->input($key, '');
                     }
                     
                     $setting->update(['value' => $value]);
+                    
+                    // Clear cache for this specific setting
+                    Cache::forget('setting_' . $key);
                 }
             }
 
-            return redirect()->back()->with('success', 'Pengaturan berhasil disimpan!');
+            // Clear all caches to ensure settings are updated
+            Artisan::call('cache:clear');
+            Artisan::call('config:clear');
+            Artisan::call('view:clear');
+            Artisan::call('route:clear');
+            
+            // Also clear the application cache specifically
+            if (isset(app()['cache'])) {
+                app()['cache']->flush();
+            }
+
+            return redirect()->back()->with('success', 'Pengaturan berhasil disimpan dan cache telah dibersihkan!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal menyimpan pengaturan: ' . $e->getMessage());
         }
@@ -75,6 +98,14 @@ class SettingsController extends Controller
             Artisan::call('config:clear');
             Artisan::call('view:clear');
             Artisan::call('route:clear');
+            
+            // Also clear the application cache specifically
+            if (isset(app()['cache'])) {
+                app()['cache']->flush();
+            }
+            
+            // Clear all setting caches
+            Cache::flush();
             
             return response()->json([
                 'success' => true,

@@ -28,15 +28,31 @@
         transition: all 0.3s ease;
         box-shadow: 0 2px 15px rgba(0,0,0,0.1);
         height: 100%;
+        display: flex;
+        flex-direction: row;
     }
     .news-card:hover {
         transform: translateY(-10px);
         box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     }
+    .news-image-container {
+        width: 40%;
+        overflow: hidden;
+    }
     .news-image {
         width: 100%;
-        height: 200px;
+        height: 100%;
         object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    .news-card:hover .news-image {
+        transform: scale(1.05);
+    }
+    .news-content {
+        width: 60%;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
     }
     .news-category {
         position: absolute;
@@ -48,28 +64,43 @@
         font-weight: 600;
         z-index: 1;
     }
-    .news-content {
-        padding: 20px;
-    }
     .news-title {
         font-size: 1.25rem;
         font-weight: 700;
-        margin-bottom: 10px;
+        margin-bottom: 3px;
         color: #2c3e50;
+        flex-grow: 1;
     }
     .news-meta {
         color: #7f8c8d;
         font-size: 0.9rem;
-        margin-bottom: 15px;
+        margin-bottom: 3px;
     }
     .news-description {
         color: #5a6c7d;
         line-height: 1.6;
+        margin-bottom: 15px;
+        flex-grow: 1;
+    }
+    .read-more {
+        margin-top: auto;
     }
     .filter-section {
         background: #f8f9fa;
         padding: 30px 0;
         margin-bottom: 40px;
+    }
+    @media (max-width: 768px) {
+        .news-card {
+            flex-direction: column;
+        }
+        .news-image-container,
+        .news-content {
+            width: 100%;
+        }
+        .news-image {
+            height: 200px;
+        }
     }
 </style>
 @endsection
@@ -124,9 +155,9 @@
 <div class="container mb-5">
     <div class="row g-4">
         @forelse($news as $item)
-        <div class="col-md-4">
+        <div class="col-12">
             <div class="card news-card">
-                <div class="position-relative">
+                <div class="news-image-container position-relative">
                     @if($item->image)
                         <img src="{{ asset($item->image) }}" alt="{{ $item->title }}" class="news-image">
                     @else
@@ -158,8 +189,8 @@
                             <span class="ms-3"><i class="fas fa-user me-2"></i>{{ $item->author }}</span>
                         @endif
                     </div>
-                    <p class="news-description">{{ Str::limit($item->description, 100) }}</p>
-                    <a href="{{ route('news.show', $item->id) }}" class="btn btn-sm btn-outline-primary">
+                    <p class="news-description">{{ Str::limit($item->description, 150) }}</p>
+                    <a href="{{ route('news.show', $item->id) }}" class="btn btn-sm btn-outline-primary read-more">
                         Baca Selengkapnya <i class="fas fa-arrow-right ms-2"></i>
                     </a>
                 </div>

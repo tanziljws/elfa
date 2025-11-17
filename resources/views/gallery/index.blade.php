@@ -103,7 +103,7 @@
         <div class="alert alert-info alert-dismissible fade show m-0" role="alert" style="border-radius: 0; border: none;">
             <div class="container">
                 <i class="fas fa-info-circle me-2"></i>
-                Anda masuk sebagai <strong>pengunjung</strong>.
+                Anda harus login terlebih dahulu agar bisa menikmati fitur komen, like, dislike dan unduh foto.
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         </div>

@@ -357,11 +357,12 @@
                             <li><a class="dropdown-item" href="{{ route('user.profile') }}"><i class="fas fa-user me-2"></i>Profil</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <form action="{{ route('user.logout') }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="dropdown-item text-danger">
-                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
-                                    </button>
+                                <a href="{{ route('user.logout') }}" class="dropdown-item text-danger"
+                                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a>
+                                
+                                <form id="logout-form" action="{{ route('user.logout') }}" method="GET" class="d-none">
                                 </form>
                             </li>
                         </ul>

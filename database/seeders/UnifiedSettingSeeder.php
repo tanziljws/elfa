@@ -96,6 +96,15 @@ class UnifiedSettingSeeder extends Seeder
                 'group' => 'gallery_user',
                 'label' => 'Auto Approve Komentar',
                 'description' => 'User bebas komen tanpa harus persetujuan admin'
+            ],
+            // Tambahkan pengaturan baru untuk mengaktifkan/nonaktifkan upload foto oleh user
+            [
+                'key' => 'enable_user_upload',
+                'value' => '1',
+                'type' => 'boolean',
+                'group' => 'gallery_user',
+                'label' => 'Izinkan User Upload Foto',
+                'description' => 'Aktifkan/nonaktifkan fitur upload foto untuk user yang sudah login'
             ]
         ];
 

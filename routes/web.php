@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\NewsController as AdminNewsController;
 use App\Http\Controllers\Admin\AboutPageController;
 use App\Http\Controllers\Admin\ContactPageController;
+use App\Http\Controllers\Admin\Auth\AdminAuthController;
 
 // Kontroller User
 use App\Http\Controllers\User\NewsController;
@@ -60,26 +61,33 @@ Route::prefix('user')->name('user.')->group(function() {
 Route::get('/galleries', [GalleryController::class, 'index'])->name('galleries.index');
 Route::get('/galleries/category/{category}', [GalleryController::class, 'category'])->name('galleries.category');
 
+// Route debugging untuk kategori galeri
+Route::get('/debug/category/{category}', function($category) {
+    try {
+        $controller = new \App\Http\Controllers\User\GalleryController();
+        return $controller->category($category);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+});
+
+// Route debugging untuk melihat data kategori
+Route::get('/debug/categories', function() {
+    $categories = [
+        'academic' => 'Akademik',
+        'extracurricular' => 'Ekstrakurikuler',
+        'event' => 'Acara & Event',
+        'common' => 'Umum'
+    ];
+    
+    return response()->json($categories);
+});
+
 // =========================
 // Admin Authentication
 // =========================
-Route::get('/admin/login', function () {
-    return view('auth.login');
-})->name('admin.login');
-
-Route::post('/admin/login', function (Request $request) {
-    $username = $request->input('username');
-    $password = $request->input('password');
-
-    // Login sederhana (sementara)
-    if ($username === 'admin' && $password === 'admin123') {
-        // Simpan session login admin
-        session(['admin_logged_in' => true]);
-        return redirect()->route('admin.dashboard');
-    }
-
-    return back()->withErrors(['username' => 'Username atau password salah.']);
-})->name('admin.login.submit');
+Route::get('/admin/login', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');
+Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('admin.login.submit');
 
 // =========================
 // User Authentication
@@ -96,14 +104,23 @@ Route::middleware('guest')->group(function() {
     Route::post('/user/register', [RegisterController::class, 'register'])->name('user.register.submit');
 });
 
-// Authenticated user routes
-Route::middleware('auth')->group(function() {
-    Route::post('/user/logout', [AuthController::class, 'logout'])->name('user.logout');
+// Authenticated user routes - menggunakan GET untuk logout agar tidak ada masalah CSRF
+Route::middleware(['auth', 'web'])->group(function() {
+    // Ganti POST menjadi GET untuk logout
+    Route::get('/user/logout', [AuthController::class, 'logout'])->name('user.logout');
     
     // Profile routes
     Route::get('/user/profile', [ProfileController::class, 'index'])->name('user.profile');
     Route::put('/user/profile', [ProfileController::class, 'update'])->name('user.profile.update');
+    
+    // Gallery upload routes (POST route still requires auth)
+    Route::post('/user/galleries', [GalleryController::class, 'store'])->name('user.galleries.store');
+    Route::get('/user/galleries/my', [GalleryController::class, 'myPhotos'])->name('user.galleries.my');
 });
+
+// Gallery upload route without auth middleware to show proper warning
+Route::get('/user/galleries/upload', [GalleryController::class, 'create'])->name('user.galleries.upload');
+
 
 // =========================
 // Admin Routes (Lindungi dengan middleware auth nanti)
@@ -153,11 +170,5 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::put('/contact/update', [ContactPageController::class, 'update'])->name('contact.update');
 });
 
-// Admin Logout Route (outside of group to avoid naming conflicts)
-Route::post('/admin/logout', function () {
-    request()->session()->invalidate();
-    request()->session()->regenerateToken();
-    // Hapus session admin login
-    session()->forget('admin_logged_in');
-    return redirect()->route('admin.login');
-})->name('admin.logout');
+// Admin Logout Route - menggunakan GET
+Route::get('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');

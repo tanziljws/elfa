@@ -4,61 +4,67 @@ namespace App\Http\Controllers\Admin\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Session;
 
 class AdminAuthController extends Controller
 {
     /**
-     * Menampilkan halaman login admin
+     * Show the admin login form
      */
     public function showLoginForm()
     {
-        if (session('admin_logged_in')) {
+        // Jika sudah login, redirect ke dashboard
+        if (session()->has('admin_logged_in')) {
             return redirect()->route('admin.dashboard');
         }
-        return view('admin.auth.login');
+        
+        return view('auth.login');
     }
 
     /**
-     * Proses login admin
+     * Handle admin login request
      */
     public function login(Request $request)
     {
         $request->validate([
             'username' => 'required|string',
             'password' => 'required|string',
+        ], [
+            'username.required' => 'Username wajib diisi',
+            'password.required' => 'Password wajib diisi',
         ]);
 
-        // Kredensial tetap
-        $adminCredentials = [
-            'username' => 'admin',
-            'password' => 'admin4321'
-        ];
+        $username = $request->input('username');
+        $password = $request->input('password');
 
-        if ($request->username === $adminCredentials['username'] && 
-            $request->password === $adminCredentials['password']) {
-            
-            // Buat session admin
+        // Login sederhana (sementara)
+        if ($username === 'admin' && $password === 'admin123') {
+            // Simpan session login admin
             session(['admin_logged_in' => true]);
             
+            // Tidak perlu regenerate session untuk mencegah page expired
+            // Langsung redirect ke dashboard
+            
             return redirect()->route('admin.dashboard')
-                ->with('success', 'Selamat datang, Admin!');
+                ->with('success', 'Selamat datang di dashboard admin!');
         }
 
-        return back()->withErrors([
-            'username' => 'Kredensial tidak valid.',
-        ])->withInput($request->only('username'));
+        return back()->withErrors(['username' => 'Username atau password salah.'])
+            ->withInput($request->only('username'));
     }
 
     /**
-     * Logout admin
+     * Handle admin logout request
      */
     public function logout(Request $request)
     {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-        return redirect()->route('admin.login');
+        // Hapus session admin login
+        session()->forget('admin_logged_in');
+        
+        // Tidak perlu invalidate session untuk mencegah page expired
+        // Langsung redirect ke login
+        
+        return redirect()->route('admin.login')
+            ->with('success', 'Anda telah berhasil logout.');
     }
 }

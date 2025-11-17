@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class Setting extends Model
 {
@@ -24,6 +25,7 @@ class Setting extends Model
      */
     public static function get($key, $default = null)
     {
+        // Always fetch from database to avoid cache issues
         $setting = static::where('key', $key)->first();
         
         if (!$setting) {
@@ -47,6 +49,9 @@ class Setting extends Model
             ]
         );
 
+        // Clear cache for this specific setting
+        Cache::forget('setting_' . $key);
+        
         return $setting;
     }
 
@@ -59,7 +64,8 @@ class Setting extends Model
             case 'integer':
                 return (int) $value;
             case 'boolean':
-                return $value === '1' || $value === 1 || $value === true || $value === 'true';
+                // Handle boolean values correctly - strict comparison
+                return in_array($value, ['1', 'true', true, 1], true);
             case 'array':
                 return json_decode($value, true);
             default:

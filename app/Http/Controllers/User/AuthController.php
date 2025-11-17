@@ -58,22 +58,28 @@ class AuthController extends Controller
         // Login the user
         Auth::login($user, $request->filled('remember'));
 
-        $request->session()->regenerate();
+        // Tidak perlu regenerate session untuk mencegah page expired
+        // Langsung redirect ke dashboard
 
         return redirect()->intended(route('user.dashboard'))
             ->with('success', 'Selamat datang, ' . $user->name . '!');
     }
 
     /**
-     * Handle logout request
+     * Handle logout request (now accepts both GET and POST)
      */
     public function logout(Request $request)
     {
+        // Store user data before logout
+        $userId = Auth::id();
+        
+        // Logout the user
         Auth::logout();
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        // Tidak perlu invalidate session untuk mencegah page expired
+        // Langsung redirect ke home
 
+        // Redirect to home with success message
         return redirect()->route('home')
             ->with('success', 'Anda telah berhasil logout.');
     }

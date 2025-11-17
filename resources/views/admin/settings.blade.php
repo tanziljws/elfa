@@ -42,7 +42,7 @@
                         'title' => 'Pengaturan Galeri User',
                         'icon' => 'fa-users',
                         'color' => 'primary',
-                        'keys' => ['gallery_require_login', 'gallery_auto_approve_comments']
+                        'keys' => ['gallery_require_login', 'gallery_auto_approve_comments', 'enable_user_upload']
                     ]
                 ];
                 
@@ -90,10 +90,10 @@
                                                            name="{{ $setting->key }}" 
                                                            value="1"
                                                            style="width: 3rem; height: 1.5rem; cursor: pointer;"
-                                                           {{ old($setting->key, $setting->value) ? 'checked' : '' }}>
+                                                           {{ old($setting->key, $setting->value) == '1' || old($setting->key, $setting->value) == true ? 'checked' : '' }}>
                                                     <label class="form-check-label ms-2" for="{{ $setting->key }}" style="cursor: pointer;">
-                                                        <span class="badge bg-{{ old($setting->key, $setting->value) ? 'success' : 'secondary' }}">
-                                                            {{ old($setting->key, $setting->value) ? 'Aktif' : 'Nonaktif' }}
+                                                        <span class="badge bg-{{ old($setting->key, $setting->value) == '1' || old($setting->key, $setting->value) == true ? 'success' : 'secondary' }}">
+                                                            {{ old($setting->key, $setting->value) == '1' || old($setting->key, $setting->value) == true ? 'Aktif' : 'Nonaktif' }}
                                                         </span>
                                                     </label>
                                                 </div>
@@ -118,6 +118,11 @@
                     </div>
                 </div>
             @endforeach
+            
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Informasi:</strong> Setelah menyimpan pengaturan, sistem akan secara otomatis membersihkan cache untuk memastikan perubahan diterapkan secara langsung.
+            </div>
             
             <div class="d-flex justify-content-end mb-4">
                 <button type="submit" class="btn btn-primary btn-lg">
@@ -259,6 +264,7 @@ function clearCache() {
         .then(data => {
             if (data.success) {
                 alert(data.message);
+                location.reload();
             } else {
                 alert('Error: ' + data.message);
             }

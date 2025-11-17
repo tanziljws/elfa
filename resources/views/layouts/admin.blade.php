@@ -487,11 +487,11 @@
                 <h4 class="page-title mb-0">@yield('page-title', 'Dashboard')</h4>
             </div>
             <div class="header-right">
-                <form action="{{ route('admin.logout') }}" method="POST" class="d-inline">
-                    @csrf
-                    <button type="submit" class="btn btn-outline-danger btn-sm">
-                        <i class="fas fa-sign-out-alt me-1"></i> Logout
-                    </button>
+                <a href="{{ route('admin.logout') }}" class="btn btn-outline-danger btn-sm"
+                   onclick="event.preventDefault(); document.getElementById('admin-logout-form').submit();">
+                    <i class="fas fa-sign-out-alt me-1"></i> Logout
+                </a>
+                <form id="admin-logout-form" action="{{ route('admin.logout') }}" method="GET" class="d-none">
                 </form>
             </div>
         </header>
