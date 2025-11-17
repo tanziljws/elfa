@@ -1,0 +1,127 @@
+# ========================================
+# RAILWAY ENVIRONMENT VARIABLES
+# Copy-paste ini ke Railway Dashboard → Service → Variables
+# ========================================
+
+# === LARAVEL CONFIGURATION ===
+APP_NAME=Laravel
+APP_ENV=production
+APP_KEY=base64:WYZKYYNBg2Mjt9QYlgXQGl2ofKHE3fhzdDC1RAGKvlU=
+APP_DEBUG=false
+APP_URL=https://your-app.up.railway.app
+
+APP_LOCALE=en
+APP_FALLBACK_LOCALE=en
+APP_FAKER_LOCALE=en_US
+APP_MAINTENANCE_DRIVER=file
+
+PHP_CLI_SERVER_WORKERS=4
+BCRYPT_ROUNDS=12
+
+LOG_CHANNEL=stack
+LOG_STACK=single
+LOG_DEPRECATIONS_CHANNEL=null
+LOG_LEVEL=error
+
+# === DATABASE CONFIGURATION ===
+# Railway akan auto-inject variables ini dari MySQL service
+# Jika sudah link MySQL service, variables ini otomatis tersedia:
+# - MYSQLHOST
+# - MYSQLPORT
+# - MYSQLDATABASE
+# - MYSQLUSER
+# - MYSQLPASSWORD
+# - RAILWAY_PRIVATE_DOMAIN
+# - MYSQL_ROOT_PASSWORD
+
+# Gunakan format ini (Railway auto-inject):
+DB_CONNECTION=mysql
+DB_HOST=${MYSQLHOST}
+DB_PORT=${MYSQLPORT}
+DB_DATABASE=${MYSQLDATABASE}
+DB_USERNAME=${MYSQLUSER}
+DB_PASSWORD=${MYSQLPASSWORD}
+
+# Atau hardcode (tidak recommended):
+# DB_CONNECTION=mysql
+# DB_HOST=${RAILWAY_PRIVATE_DOMAIN}
+# DB_PORT=3306
+# DB_DATABASE=railway
+# DB_USERNAME=root
+# DB_PASSWORD=mtFuxLheGuzbLeWjWJWsreBpfxQmaAkp
+
+# === SESSION & CACHE ===
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+SESSION_ENCRYPT=false
+SESSION_PATH=/
+SESSION_DOMAIN=null
+
+BROADCAST_CONNECTION=log
+FILESYSTEM_DISK=local
+QUEUE_CONNECTION=database
+CACHE_STORE=database
+
+# === REDIS (Optional) ===
+REDIS_CLIENT=phpredis
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+# === MAIL CONFIGURATION ===
+MAIL_MAILER=log
+MAIL_SCHEME=null
+MAIL_HOST=127.0.0.1
+MAIL_PORT=2525
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_FROM_ADDRESS=hello@example.com
+MAIL_FROM_NAME=${APP_NAME}
+
+# === AWS (Optional) ===
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=
+AWS_USE_PATH_STYLE_ENDPOINT=false
+
+# === VITE ===
+VITE_APP_NAME=${APP_NAME}
+
+# === GOOGLE RECAPTCHA ===
+# Ganti dengan production keys
+NOCAPTCHA_SECRET=your-production-secret-key
+NOCAPTCHA_SITEKEY=your-production-site-key
+
+# ========================================
+# RAILWAY MYSQL VARIABLES (Auto-Generated)
+# ========================================
+# Variables ini otomatis tersedia setelah link MySQL service:
+
+# MYSQL_DATABASE=railway
+# MYSQL_ROOT_PASSWORD=mtFuxLheGuzbLeWjWJWsreBpfxQmaAkp
+# MYSQL_URL=mysql://root:mtFuxLheGuzbLeWjWJWsreBpfxQmaAkp@${RAILWAY_PRIVATE_DOMAIN}:3306/railway
+# MYSQL_PUBLIC_URL=mysql://root:mtFuxLheGuzbLeWjWJWsreBpfxQmaAkp@${RAILWAY_TCP_PROXY_DOMAIN}:${RAILWAY_TCP_PROXY_PORT}/railway
+# MYSQLDATABASE=railway
+# MYSQLHOST=${RAILWAY_PRIVATE_DOMAIN}
+# MYSQLPASSWORD=mtFuxLheGuzbLeWjWJWsreBpfxQmaAkp
+# MYSQLPORT=3306
+# MYSQLUSER=root
+
+# ========================================
+# CARA SETUP DI RAILWAY
+# ========================================
+# 1. Buka Railway Dashboard
+# 2. Pilih service Laravel Anda
+# 3. Klik tab "Variables"
+# 4. Klik "Add MySQL" untuk link MySQL service (auto-inject variables)
+# 5. Tambahkan variables manual di atas (APP_*, LOG_*, SESSION_*, dll)
+# 6. Deploy ulang service
+
+# ========================================
+# NOTES
+# ========================================
+# - Gunakan ${RAILWAY_PRIVATE_DOMAIN} untuk koneksi internal (lebih cepat)
+# - Gunakan ${RAILWAY_TCP_PROXY_DOMAIN} untuk koneksi eksternal
+# - Railway akan auto-replace ${VARIABLE} dengan nilai sebenarnya
+# - Jangan commit file ini ke Git!
