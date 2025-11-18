@@ -27,6 +27,20 @@ use App\Http\Controllers\Auth\RegisterController;
 // Rute Halaman Depan (Publik)
 // =========================
 
+// Serve storage files (for Railway PHP built-in server)
+Route::get('/storage/{path}', function ($path) {
+    $filePath = storage_path('app/public/' . $path);
+    
+    if (!file_exists($filePath) || !is_file($filePath)) {
+        abort(404);
+    }
+    
+    $mimeType = mime_content_type($filePath);
+    return response()->file($filePath, [
+        'Content-Type' => $mimeType,
+    ]);
+})->where('path', '.*')->name('storage.serve');
+
 // Halaman Utama
 Route::get('/', function () {
     return view('gallery.index');
