@@ -28,18 +28,28 @@ use App\Http\Controllers\Auth\RegisterController;
 // =========================
 
 // Serve storage files (for Railway PHP built-in server)
+// This route must be before any middleware that might block it
 Route::get('/storage/{path}', function ($path) {
+    // Sanitize path to prevent directory traversal
+    $path = str_replace('..', '', $path);
+    $path = ltrim($path, '/');
+    
     $filePath = storage_path('app/public/' . $path);
     
-    if (!file_exists($filePath) || !is_file($filePath)) {
-        abort(404);
+    // Check if file exists and is readable
+    if (!file_exists($filePath) || !is_file($filePath) || !is_readable($filePath)) {
+        abort(404, 'File not found');
     }
     
-    $mimeType = mime_content_type($filePath);
+    // Get MIME type
+    $mimeType = mime_content_type($filePath) ?: 'application/octet-stream';
+    
+    // Return file with proper headers
     return response()->file($filePath, [
         'Content-Type' => $mimeType,
+        'Cache-Control' => 'public, max-age=31536000',
     ]);
-})->where('path', '.*')->name('storage.serve');
+})->where('path', '.*')->name('storage.serve')->middleware('web');
 
 // Halaman Utama
 Route::get('/', function () {
