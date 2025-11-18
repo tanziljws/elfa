@@ -10,7 +10,12 @@ class ContactController extends Controller
 {
     public function index()
     {
-        $contact = ContactPage::first();
+        try {
+            $contact = ContactPage::first();
+        } catch (\Exception $e) {
+            // If table doesn't exist or other database error, use default values
+            $contact = null;
+        }
         
         // If no data exists, use default values
         if (!$contact) {

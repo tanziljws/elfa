@@ -10,7 +10,12 @@ class AboutController extends Controller
 {
     public function index()
     {
-        $about = AboutPage::first();
+        try {
+            $about = AboutPage::first();
+        } catch (\Exception $e) {
+            // If table doesn't exist or other database error, use default values
+            $about = null;
+        }
         
         // If no data exists, use default values
         if (!$about) {
