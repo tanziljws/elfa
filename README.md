@@ -149,4 +149,4 @@ Silakan buat issue atau pull request untuk perbaikan dan fitur baru.
 
 ---
 
-**Dibuat dengan ❤️ untuk Sekolah Elfa**
+**Dibuat dengan ❤️ untuk Sekolah Elfa**# elfa
