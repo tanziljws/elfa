@@ -720,7 +720,7 @@
                 @auth
                     Selamat datang di galeri {{ auth()->user()->name }}!
                 @else
-                    Selamat datang di Dashboard!
+                    Selamat datang di Beranda!
                 @endauth
             </h1>
             <p class="dashboard-subtitle">
