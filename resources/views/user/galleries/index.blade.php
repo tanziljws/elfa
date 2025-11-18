@@ -18,6 +18,46 @@
             width: 100%;
             height: 250px;
             object-fit: cover;
+            transition: opacity 0.3s ease;
+        }
+        .gallery-item img.loading {
+            opacity: 0.5;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        .gallery-item img.error {
+            opacity: 0.3;
+            background: #f8f9fa;
+        }
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .image-placeholder {
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+        }
+        .image-error {
+            width: 100%;
+            height: 250px;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            flex-direction: column;
+        }
+        .image-error i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
         }
         .gallery-overlay {
             position: absolute;
@@ -75,6 +115,18 @@
             width: 100%;
             height: auto;
             border-radius: 10px;
+            transition: opacity 0.3s ease;
+        }
+        .modal-body img.loading {
+            opacity: 0.5;
+            min-height: 300px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        .modal-body img.error {
+            opacity: 0.3;
+            background: #f8f9fa;
         }
 </style>
 @endsection
@@ -326,7 +378,42 @@
             }
         }
 
-        // Display gallery items
+        // Image loader with retry mechanism
+        function loadImageWithRetry(img, src, maxRetries = 3, retryDelay = 1000) {
+            let retries = 0;
+            
+            function attemptLoad() {
+                return new Promise((resolve, reject) => {
+                    const imageLoader = new Image();
+                    
+                    imageLoader.onload = () => {
+                        img.src = src;
+                        img.classList.remove('loading', 'error');
+                        img.style.opacity = '1';
+                        resolve();
+                    };
+                    
+                    imageLoader.onerror = () => {
+                        retries++;
+                        if (retries < maxRetries) {
+                            setTimeout(() => attemptLoad(), retryDelay * retries);
+                        } else {
+                            img.classList.remove('loading');
+                            img.classList.add('error');
+                            img.alt = 'Gambar tidak dapat dimuat';
+                            img.onerror = null; // Prevent infinite loop
+                            reject(new Error('Failed to load image after ' + maxRetries + ' retries'));
+                        }
+                    };
+                    
+                    imageLoader.src = src;
+                });
+            }
+            
+            return attemptLoad();
+        }
+
+        // Display gallery items with optimized image loading
         function displayGallery(galleries) {
             const container = document.getElementById('galleryContainer');
             
@@ -335,22 +422,68 @@
                 return;
             }
 
-            galleries.forEach(gallery => {
+            galleries.forEach((gallery, index) => {
                 const col = document.createElement('div');
                 col.className = 'col-md-4 col-lg-3';
                 
-                col.innerHTML = `
-                    <div class="gallery-item" onclick="showPhotoDetail(${gallery.id})">
-                        <img src="${gallery.image_url}" alt="${gallery.title}" loading="lazy">
-                        <div class="category-badge">${getCategoryName(gallery.category)}</div>
-                        <div class="gallery-overlay">
-                            <h6 class="mb-1">${gallery.title}</h6>
-                            <small>${gallery.description || 'Tidak ada deskripsi'}</small>
-                        </div>
-                    </div>
-                `;
+                // Create placeholder first
+                const placeholder = document.createElement('div');
+                placeholder.className = 'image-placeholder';
+                placeholder.innerHTML = '<i class="fas fa-image"></i>';
                 
+                const img = document.createElement('img');
+                img.alt = gallery.title;
+                img.loading = 'lazy';
+                img.classList.add('loading');
+                img.style.opacity = '0.5';
+                
+                // Create gallery item structure
+                const galleryItem = document.createElement('div');
+                galleryItem.className = 'gallery-item';
+                galleryItem.onclick = () => showPhotoDetail(gallery.id);
+                
+                galleryItem.appendChild(img);
+                galleryItem.appendChild(placeholder);
+                
+                const categoryBadge = document.createElement('div');
+                categoryBadge.className = 'category-badge';
+                categoryBadge.textContent = getCategoryName(gallery.category);
+                galleryItem.appendChild(categoryBadge);
+                
+                const overlay = document.createElement('div');
+                overlay.className = 'gallery-overlay';
+                overlay.innerHTML = `
+                    <h6 class="mb-1">${gallery.title}</h6>
+                    <small>${gallery.description || 'Tidak ada deskripsi'}</small>
+                `;
+                galleryItem.appendChild(overlay);
+                
+                col.appendChild(galleryItem);
                 container.appendChild(col);
+                
+                // Load image with retry mechanism
+                loadImageWithRetry(img, gallery.image_url, 3, 1000)
+                    .then(() => {
+                        placeholder.remove();
+                    })
+                    .catch((error) => {
+                        console.error('Error loading image:', error);
+                        placeholder.remove();
+                        // Show error placeholder
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'image-error';
+                        errorDiv.innerHTML = `
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <small>Gagal memuat gambar</small>
+                        `;
+                        img.replaceWith(errorDiv);
+                    });
+                
+                // Preload next images (for better UX)
+                if (index < galleries.length - 1) {
+                    const nextImg = new Image();
+                    nextImg.src = galleries[index + 1].image_url;
+                }
             });
         }
 
@@ -388,6 +521,10 @@
         async function showPhotoDetail(id) {
             currentPhotoId = id;
             
+            const photoImage = document.getElementById('photoImage');
+            photoImage.classList.add('loading');
+            photoImage.style.opacity = '0.5';
+            
             try {
                 const response = await fetch(`/api/galleries/${id}`);
                 const data = await response.json();
@@ -395,11 +532,19 @@
                 if (data.success) {
                     const gallery = data.data;
                     document.getElementById('photoTitle').textContent = gallery.title;
-                    document.getElementById('photoImage').src = gallery.image_url;
-                    document.getElementById('photoImage').alt = gallery.title;
                     document.getElementById('photoDescription').textContent = gallery.description || 'Tidak ada deskripsi';
                     document.getElementById('photoCategory').textContent = getCategoryName(gallery.category);
                     document.getElementById('photoDate').textContent = new Date(gallery.created_at).toLocaleDateString('id-ID');
+                    
+                    // Load image with retry
+                    loadImageWithRetry(photoImage, gallery.image_url, 3, 1000)
+                        .then(() => {
+                            photoImage.alt = gallery.title;
+                        })
+                        .catch((error) => {
+                            console.error('Error loading photo detail image:', error);
+                            photoImage.alt = 'Gambar tidak dapat dimuat';
+                        });
                     
                     // Load like/dislike status
                     loadLikeStatus(id);
@@ -408,9 +553,15 @@
                     loadComments(id);
                     
                     new bootstrap.Modal(document.getElementById('photoDetailModal')).show();
+                } else {
+                    photoImage.classList.remove('loading');
+                    alert('Gagal memuat detail foto');
                 }
             } catch (error) {
                 console.error('Error loading photo detail:', error);
+                photoImage.classList.remove('loading');
+                photoImage.classList.add('error');
+                alert('Terjadi kesalahan saat memuat detail foto. Silakan coba lagi.');
             }
         }
 
