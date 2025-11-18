@@ -38,18 +38,20 @@ Route::get('/storage/{path}', function ($path) {
     
     // Check if file exists and is readable
     if (!file_exists($filePath) || !is_file($filePath) || !is_readable($filePath)) {
+        // Return 404 instead of 403
         abort(404, 'File not found');
     }
     
     // Get MIME type
     $mimeType = mime_content_type($filePath) ?: 'application/octet-stream';
     
-    // Return file with proper headers
+    // Return file with proper headers (no CSRF check for static files)
     return response()->file($filePath, [
         'Content-Type' => $mimeType,
         'Cache-Control' => 'public, max-age=31536000',
+        'Access-Control-Allow-Origin' => '*',
     ]);
-})->where('path', '.*')->name('storage.serve')->middleware('web');
+})->where('path', '.*')->name('storage.serve');
 
 // Halaman Utama
 Route::get('/', function () {
