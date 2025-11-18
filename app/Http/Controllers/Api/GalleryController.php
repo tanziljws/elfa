@@ -15,24 +15,34 @@ class GalleryController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Gallery::where('is_active', true);
+        try {
+            $query = Gallery::where('is_active', true);
 
-        // Filter by category
-        if ($request->has('category') && $request->category !== 'all') {
-            $query->where('category', $request->category);
+            // Filter by category
+            if ($request->has('category') && $request->category !== 'all') {
+                $query->where('category', $request->category);
+            }
+
+            // Search by title
+            if ($request->has('search')) {
+                $query->where('title', 'like', '%' . $request->search . '%');
+            }
+
+            $galleries = $query->orderBy('created_at', 'desc')->paginate(12);
+
+            return response()->json([
+                'success' => true,
+                'data' => $galleries
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Gallery API index error: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load galleries',
+                'error' => app()->environment('local') ? $e->getMessage() : 'Internal server error'
+            ], 500);
         }
-
-        // Search by title
-        if ($request->has('search')) {
-            $query->where('title', 'like', '%' . $request->search . '%');
-        }
-
-        $galleries = $query->orderBy('created_at', 'desc')->paginate(12);
-
-        return response()->json([
-            'success' => true,
-            'data' => $galleries
-        ]);
     }
 
     /**
@@ -174,6 +184,7 @@ class GalleryController extends Controller
      */
     public function categories()
     {
+        // Return static categories without database query
         $categories = [
             'academic' => 'Akademik',
             'extracurricular' => 'Ekstrakurikuler',

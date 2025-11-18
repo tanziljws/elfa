@@ -11,11 +11,13 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+// Public Gallery API Routes (no session needed)
+Route::get('/galleries/categories', [GalleryController::class, 'categories']);
+Route::get('/galleries', [GalleryController::class, 'index']);
+Route::get('/galleries/{id}', [GalleryController::class, 'show']);
+
 // Gallery API Routes - menggunakan web middleware untuk session auth
 Route::middleware('web')->group(function () {
-    Route::get('/galleries', [GalleryController::class, 'index']);
-    Route::get('/galleries/categories', [GalleryController::class, 'categories']);
-    Route::get('/galleries/{id}', [GalleryController::class, 'show']);
     Route::post('/galleries', [GalleryController::class, 'store']);
     Route::put('/galleries/{id}', [GalleryController::class, 'update']);
     Route::delete('/galleries/{id}', [GalleryController::class, 'destroy']);
